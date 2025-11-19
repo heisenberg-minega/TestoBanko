@@ -1,0 +1,183 @@
+<!-- ============================================================================
+FILE: templates/teacher_dashboard/dashboard.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - Test Banking System{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+    <h1 class="h3 mb-1"><i class="bi bi-speedometer2 me-2"></i>Teacher Dashboard</h1>
+    <p class="text-muted">Welcome back, {{ teacher.user.get_full_name }}</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <div class="stat-icon mb-3">
+                    <i class="bi bi-file-earmark-text fs-1"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-1">{{ my_uploads }}</h2>
+                <p class="mb-0 text-muted">My Uploads</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <div class="stat-icon mb-3">
+                    <i class="bi bi-building fs-1"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-1">{{ teacher.department.code }}</h2>
+                <p class="mb-0 text-muted">Department</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card border-0 shadow-sm">
+            <div class="card-body p-4 text-center">
+                <div class="stat-icon mb-3">
+                    <i class="bi bi-person-check fs-1"></i>
+                </div>
+                <h2 class="display-5 fw-bold mb-1">
+                    {% if teacher.is_active %}
+                        <span class="text-success">Active</span>
+                    {% else %}
+                        <span class="text-danger">Inactive</span>
+                    {% endif %}
+                </h2>
+                <p class="mb-0 text-muted">Account Status</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 ">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <a href="{% url 'questionnaires:upload_questionnaire' %}" class="action-card card border-0 text-center text-decoration-none h-100">
+                            <div class="card-body p-4">
+                                <div class="action-icon mb-3">
+                                    <i class="bi bi-upload fs-2 text-primary"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Upload Questionnaire</h6>
+                                <p class="small text-muted mb-0">Add new questionnaire</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'questionnaires:my_uploads' %}" class="action-card card border-0 text-center text-decoration-none h-100">
+                            <div class="card-body p-4">
+                                <div class="action-icon mb-3">
+                                    <i class="bi bi-file-person fs-2 text-success"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">My Uploads</h6>
+                                <p class="small text-muted mb-0">View your uploads</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-4">
+                        <a href="{% url 'questionnaires:browse_questionnaires' %}" class="action-card card border-0 text-center text-decoration-none h-100">
+                            <div class="card-body p-4">
+                                <div class="action-icon mb-3">
+                                    <i class="bi bi-search fs-2 text-info"></i>
+                                </div>
+                                <h6 class="fw-bold mb-1">Browse</h6>
+                                <p class="small text-muted mb-0">Find questionnaires</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% comment %} <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0"><i class="bi bi-person me-2"></i>My Information</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">Name</span>
+                            <span class="text-end">{{ teacher.user.get_full_name }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">Email</span>
+                            <span class="text-end">{{ teacher.user.email }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">Employee ID</span>
+                            <span class="text-end">{{ teacher.employee_id }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">Department</span>
+                            <span class="text-end">{{ teacher.department.name }}</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item border-0 py-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-medium">Phone</span>
+                            <span class="text-end">{{ teacher.phone|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> {% endcomment %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-header {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 1rem;
+}
+
+.stat-card {
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.action-card {
+    transition: all 0.2s;
+    border: 1px solid #e9ecef !important;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    border-color: #667eea !important;
+}
+
+.list-group-item {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}

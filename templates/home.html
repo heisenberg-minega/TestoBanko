@@ -1,0 +1,35 @@
+
+<!-- ============================================================================
+FILE: templates/home.html
+============================================================================ -->{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row min-vh-100 align-items-center">
+        <div class="col-lg-6 mx-auto text-center">
+            <div class="card p-5">
+                <h1 class="display-4 mb-4">
+                    <i class="bi bi-bank2 text-primary"></i><br>
+                    Test Banking System
+                </h1>
+                <p class="lead mb-4">A centralized digital repository of test questionnaires for our college</p>
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2"></i> Go to Admin Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:teacher_dashboard' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-speedometer2"></i> Go to Dashboard
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> Login to Continue
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

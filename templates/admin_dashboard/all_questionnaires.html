@@ -1,0 +1,111 @@
+<!-- ============================================================================
+FILE: templates/admin_dashboard/all_questionnaires.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}All Questionnaires - Admin{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-files"></i> All Questionnaires</h1>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <select name="department" class="form-select">
+                    <option value="">All Departments</option>
+                    {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if selected_department == dept.id|stringformat:"s" %}selected{% endif %}>
+                            {{ dept.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="subject" class="form-select">
+                    <option value="">All Subjects</option>
+                    {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject == sub.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sub.code }} - {{ sub.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="search" class="form-control" placeholder="Search questionnaires..." value="{{ search_query }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for quest in page_obj %}
+    <div class="col-md-4 mb-3">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ quest.title }}</h5>
+                <p class="card-text text-muted small">{{ quest.description|truncatewords:15 }}</p>
+                <ul class="list-unstyled small">
+                    <li><i class="bi bi-building"></i> {{ quest.department.code }}</li>
+                    <li><i class="bi bi-book"></i> {{ quest.subject.code }}</li>
+                    <li><i class="bi bi-person"></i> {{ quest.uploader.user.get_full_name }}</li>
+                    <li><i class="bi bi-file-earmark"></i> {{ quest.file_type|upper }} ({{ quest.get_file_size_display }})</li>
+                    <li><i class="bi bi-calendar"></i> {{ quest.uploaded_at|date:"M d, Y" }}</li>
+                </ul>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'questionnaires:download_questionnaire' quest.pk %}" class="btn btn-sm btn-success">
+                        <i class="bi bi-download"></i> Download
+                    </a>
+                    <a href="{% url 'questionnaires:edit_questionnaire' quest.pk %}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'questionnaires:delete_questionnaire' quest.pk %}" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: #ccc;"></i>
+                <p class="lead mt-3">No questionnaires found</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav>
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&department={{ selected_department }}&subject={{ selected_subject }}&search={{ search_query }}">Previous</a>
+            </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}&department={{ selected_department }}&subject={{ selected_subject }}&search={{ search_query }}">{{ num }}</a>
+            </li>
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&department={{ selected_department }}&subject={{ selected_subject }}&search={{ search_query }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

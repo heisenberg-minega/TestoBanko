@@ -1,0 +1,352 @@
+<!-- ============================================================================
+FILE: templates/admin_dashboard/dashboard.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Test Banking System{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --primary: #667eea;
+        --secondary: #764ba2;
+        --success: #48bb78;
+        --info: #4299e1;
+        --warning: #ed8936;
+        --light: #f7fafc;
+        --dark: #2d3748;
+        --text: #4a5568;
+        --border: #e2e8f0;
+    }
+    
+    body {
+        background-color: #f8fafc;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .dashboard-header {
+        background: white;
+        padding: 2rem 0 1rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .dashboard-title {
+        color: var(--dark);
+        font-weight: 600;
+        font-size: 1.75rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: var(--text);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .action-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background: white;
+        border-bottom: 1px solid var(--border);
+        padding: 1.25rem 1.5rem;
+    }
+    
+    .card-title {
+        font-weight: 600;
+        color: var(--dark);
+        margin: 0;
+        font-size: 1.1rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        border: none;
+        font-weight: 500;
+    }
+    
+    .action-btn i {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        color: white;
+    }
+    
+    .info-card {
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        height: 100%;
+    }
+    
+    .progress-container {
+        background: var(--light);
+        border-radius: 8px;
+        overflow: hidden;
+        height: 8px;
+    }
+    
+    .progress-bar {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        height: 100%;
+        border-radius: 8px;
+        transition: width 0.5s ease;
+    }
+    
+    .system-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .system-item:last-child {
+        border-bottom: none;
+    }
+    
+    .system-item i {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+    }
+    
+    .tip-list {
+        list-style: none;
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+    
+    .tip-list li {
+        padding: 0.5rem 0;
+        color: var(--text);
+        font-size: 0.9rem;
+    }
+    
+    .tip-list li:before {
+        content: "•";
+        color: var(--primary);
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+    
+    @media (max-width: 768px) {
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .action-btn {
+            padding: 1.25rem 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .action-btn i {
+            font-size: 1.5rem;
+        }
+        
+        .dashboard-title {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="container">
+        <h1 class="dashboard-title">
+            <i class="bi bi-speedometer2 me-3"></i>Admin Dashboard
+        </h1>
+        <p class="text-muted mb-0">System overview and quick actions</p>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Stats Cards -->
+    <div class="row g-4">
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ active_teachers }}</div>
+                <div class="stat-label">Active Teachers</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_departments }}</div>
+                <div class="stat-label">Departments</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_subjects }}</div>
+                <div class="stat-label">Subjects</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_teachers }}</div>
+                <div class="stat-label">Total Teachers</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="action-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="bi bi-lightning me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <a href="{% url 'accounts:add_teacher' %}" class="btn btn-primary action-btn w-100" 
+                               style="background: linear-gradient(135deg, var(--primary), var(--secondary));">
+                                <i class="bi bi-person-plus"></i>
+                                Add Teacher
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{% url 'accounts:manage_departments' %}" class="btn btn-success action-btn w-100"
+                               style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                                <i class="bi bi-building-add"></i>
+                                Add Department
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{% url 'accounts:manage_subjects' %}" class="btn btn-info action-btn w-100"
+                               style="background: linear-gradient(135deg, #4299e1, #3182ce);">
+                                <i class="bi bi-book"></i>
+                                Add Subject
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="{% url 'questionnaires:all_questionnaires' %}" class="btn btn-warning action-btn w-100"
+                               style="background: linear-gradient(135deg, #ed8936, #dd6b20);">
+                                <i class="bi bi-files"></i>
+                                View All Files
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview & Information -->
+    <div class="row mt-4 g-4">
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="bi bi-graph-up me-2"></i>System Overview</h5>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Teacher Activity Progress -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="text-muted">Teachers Active</span>
+                            <strong>{{ active_teachers }} / {{ total_teachers }}</strong>
+                        </div>
+                        <div class="progress-container">
+                            {% if total_teachers > 0 %}
+                                {% widthratio active_teachers total_teachers 100 as percentage %}
+                                <div class="progress-bar" style="width: {{ percentage }}%;"></div>
+                            {% else %}
+                                <div class="progress-bar" style="width: 0%;"></div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Department Count -->
+                    <div class="system-item">
+                        <i class="bi bi-building text-primary"></i>
+                        <div class="flex-grow-1">
+                            <span class="text-muted">Departments</span>
+                        </div>
+                        <strong>{{ total_departments }}</strong>
+                    </div>
+                    
+                    <!-- Subject Count -->
+                    <div class="system-item">
+                        <i class="bi bi-book text-info"></i>
+                        <div class="flex-grow-1">
+                            <span class="text-muted">Subjects</span>
+                        </div>
+                        <strong>{{ total_subjects }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="info-card">
+                <div class="card-header">
+                    <h5 class="card-title"><i class="bi bi-info-circle me-2"></i>System Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="system-item">
+                        <i class="bi bi-check-circle text-success"></i>
+                        <div>System is running properly</div>
+                    </div>
+                    <div class="system-item">
+                        <i class="bi bi-shield-check text-primary"></i>
+                        <div>All security features enabled</div>
+                    </div>
+                    <div class="system-item">
+                        <i class="bi bi-database text-info"></i>
+                        <div>Database connected</div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <h6 class="mb-3" style="color: var(--dark);">Quick Tips:</h6>
+                    <ul class="tip-list">
+                        <li>Add departments before adding subjects</li>
+                        <li>Teachers must be assigned to a department</li>
+                        <li>Teachers can only upload questionnaires after subjects are created</li>
+                        <li>You can deactivate teachers without deleting them</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

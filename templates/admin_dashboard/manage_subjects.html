@@ -1,0 +1,135 @@
+<!-- ============================================================================
+FILE: templates/admin_dashboard/manage_subjects.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}Manage Subjects - Admin{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-book"></i> Manage Subjects</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Add New Subject</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Departments * <small class="text-muted">(Select all that apply)</small></label>
+                        <div class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                            {{ form.departments }}
+                        </div>
+                        {% if form.departments.errors %}
+                            <div class="text-danger">{{ form.departments.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject Code *</label>
+                        <input type="text" class="form-control" name="code" placeholder="e.g., ETHIC1" required>
+                        {% if form.code.errors %}
+                            <div class="text-danger">{{ form.code.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject Name *</label>
+                        <input type="text" class="form-control" name="name" placeholder="e.g., Ethics" required>
+                        {% if form.name.errors %}
+                            <div class="text-danger">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Optional description"></textarea>
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-plus-circle"></i> Add Subject
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Existing Subjects</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Departments</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for subject in subjects %}
+                            <tr>
+                                <td><strong>{{ subject.code }}</strong></td>
+                                <td>{{ subject.name }}</td>
+                                <td>
+                                    {% for dept in subject.departments.all %}
+                                        <span class="badge bg-info me-1">{{ dept.code }}</span>
+                                    {% empty %}
+                                        <span class="text-muted">No departments</span>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'accounts:edit_subject' subject.pk %}" class="btn btn-sm btn-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'accounts:delete_subject' subject.pk %}" class="btn btn-sm btn-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No subjects found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control, select, textarea {
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    select {
+        width: 100%;
+    }
+    /* Style for department checkboxes */
+    input[type="checkbox"] {
+        margin-right: 8px;
+        cursor: pointer;
+    }
+    label {
+        cursor: pointer;
+        margin-bottom: 8px;
+        display: block;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+</style>
+{% endblock %}

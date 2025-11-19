@@ -1,0 +1,133 @@
+<!-- ============================================================================
+FILE: templates/teacher_dashboard/upload_questionnaire.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}Upload Questionnaire - Teacher{% endblock %}
+
+{% block content %}
+<h1 class="mb-4"><i class="bi bi-upload"></i> Upload Questionnaire</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger">{{ form.title.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Department</label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <div class="text-danger">{{ form.department.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger">{{ form.subject.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Subjects available for the selected department</div>
+                    </div>
+
+                    
+                    <div class="mb-3">
+                        <label class="form-label">File</label>
+                        {{ form.file }}
+                        {% if form.file.errors %}
+                            <div class="text-danger">{{ form.file.errors }}</div>
+                        {% endif %}
+                        <div class="form-text">Allowed formats: PDF, DOCX, XLSX, XLS, TXT (Max 10MB)</div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload Questionnaire
+                        </button>
+                        <a href="{% url 'accounts:teacher_dashboard' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle"></i> Upload Guidelines</h5>
+                <ul class="small">
+                    <li>Provide a clear, descriptive title</li>
+                    <li>Add a brief description of the questionnaire</li>
+                    <li>Select the correct department and subject</li>
+                    <li>Ensure file is in an acceptable format</li>
+                    <li>Maximum file size is 10MB</li>
+                    <li>Files are organized by department and subject</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    form input[type="text"], form select, form textarea, form input[type="file"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.querySelector('select[name="department"]');
+    const subjectSelect = document.querySelector('select[name="subject"]');
+    
+    if (departmentSelect && subjectSelect) {
+        departmentSelect.addEventListener('change', function() {
+            const departmentId = this.value;
+            
+            if (departmentId) {
+                // Fetch subjects for selected department
+                fetch(`/questionnaires/get-subjects/?department=${departmentId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        subjectSelect.innerHTML = '<option value="">---------</option>';
+                        data.subjects.forEach(subject => {
+                            const option = document.createElement('option');
+                            option.value = subject.id;
+                            option.textContent = `${subject.code} - ${subject.name}`;
+                            subjectSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                subjectSelect.innerHTML = '<option value="">---------</option>';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+<!-- ============================================================================
+FILE: templates/admin_dashboard/manage_teachers.html
+============================================================================ -->
+{% extends 'base.html' %}
+
+{% block title %}Manage Teachers - Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-people"></i> Manage Teachers</h1>
+    <a href="{% url 'accounts:add_teacher' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Add New Teacher
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <div class="input-group">
+                <input type="text" class="form-control" name="search" placeholder="Search teachers..." value="{{ search_query }}">
+                <button class="btn btn-primary" type="submit">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for teacher in teachers %}
+                    <tr>
+                        <td>{{ teacher.employee_id }}</td>
+                        <td>{{ teacher.user.get_full_name }}</td>
+                        <td>{{ teacher.user.email }}</td>
+                        <td>{{ teacher.department.name }}</td>
+                        <td>
+                            {% if not teacher.is_active %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% elif teacher.user.last_login %}
+                                <div class="small text-muted">Last login:</div>
+                                <strong>{{ teacher.user.last_login|date:"M d, Y" }}</strong>
+                                <div class="small text-muted">{{ teacher.user.last_login|date:"h:i A" }}</div>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Never Logged In</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'accounts:edit_teacher' teacher.pk %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'accounts:delete_teacher' teacher.pk %}" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">No teachers found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
