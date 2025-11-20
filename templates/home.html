@@ -1,18 +1,37 @@
-
-<!-- ============================================================================
-FILE: templates/home.html
-============================================================================ -->{% extends 'base.html' %}
+{% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
+<style>
+    body {
+        background: url("{% static 'images/violet-bisu-H-plain.png' %}") no-repeat center center fixed;
+        background-size: cover;
+    }
+
+   
+    .card {
+        background: rgba(255, 255, 255, 0.83);
+        backdrop-filter: blur(4px);
+    }
+</style>
+
 <div class="container">
     <div class="row min-vh-100 align-items-center">
         <div class="col-lg-6 mx-auto text-center">
             <div class="card p-5">
                 <h1 class="display-4 mb-4">
-                    <i class="bi bi-bank2 text-primary"></i><br>
-                    Test Banking System
+             <img src="{% static 'images/bisulogo.png' %}" 
+             alt="BISU Logo"
+             style="width: 80px; height: 80px; object-fit: contain;">
+             <br>
+            BISU Test Banking System
                 </h1>
-                <p class="lead mb-4">A centralized digital repository of test questionnaires for our college</p>
+
+
+                <p class="lead mb-4">
+                    A centralized digital repository of test questionnaires for BISU Balilihan
+                </p>
+
                 {% if user.is_authenticated %}
                     {% if user.is_staff %}
                         <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-primary btn-lg">

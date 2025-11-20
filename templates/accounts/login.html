@@ -1,10 +1,20 @@
-
-<!-- ============================================================================
-FILE: templates/accounts/login.html
-============================================================================ -->
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
+<style>
+    body {
+        background: url("{% static 'images/violet-bisu-H-plain.png' %}") no-repeat center center fixed;
+        background-size: cover;
+    }
+
+    /* Optional: same transparent card effect */
+    .card {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(4px);
+    }
+</style>
+
 <div class="container">
     <div class="row min-vh-100 align-items-center">
         <div class="col-md-5 mx-auto">
@@ -14,6 +24,7 @@ FILE: templates/accounts/login.html
                         <i class="bi bi-lock-fill text-primary"></i><br>
                         Login
                     </h2>
+
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
@@ -24,15 +35,18 @@ FILE: templates/accounts/login.html
                             <label for="password" class="form-label">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
                         </div>
+
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Login
                         </button>
                     </form>
+
                     <div class="text-center mt-3">
                         <a href="{% url 'home' %}" class="text-muted">
                             <i class="bi bi-arrow-left"></i> Back to Home
                         </a>
                     </div>
+
                 </div>
             </div>
         </div>
