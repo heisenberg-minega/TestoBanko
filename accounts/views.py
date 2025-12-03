@@ -9,8 +9,11 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
-from .models import TeacherProfile, Department, Subject
+from .models import ActivityLog, TeacherProfile, Department, Subject
 from .forms import TeacherCreationForm, TeacherEditForm, DepartmentForm, SubjectForm
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -43,6 +46,8 @@ def log_subject_activity(subject, action, user=None):
     description = f"Subject {subject.name} ({subject.code}) was {action}"
     log_activity(f'subject_{action}', description, user)
 
+# accounts/views.py - Updated login_view function
+
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('home')
@@ -55,12 +60,13 @@ def login_view(request):
         if user is not None:
             login(request, user)
             
-            # LOG LOGIN ACTIVITY
+            # LOG LOGIN ACTIVITY with role information
             from .models import ActivityLog
+            user_role = "Administrator" if user.is_staff else "Teacher"
             ActivityLog.objects.create(
                 activity_type='user_login',
                 user=user,
-                description=f"User {user.get_full_name()} logged in to the system"
+                description=f"{user_role} {user.get_full_name()} logged in to the system"
             )
             
             if user.is_staff:
@@ -86,31 +92,15 @@ def admin_dashboard(request):
     total_departments = Department.objects.count()
     total_subjects = Subject.objects.count()
     
-    # Get recent activities from ActivityLog model (last 24 hours)
-    from .models import ActivityLog
-    since = timezone.now() - timedelta(hours=24)
-    recent_activities_db = ActivityLog.objects.filter(created_at__gte=since).select_related('user')[:10]
-    
-    # Format activities for template
-    recent_activities = []
-    for activity in recent_activities_db:
-        recent_activities.append({
-            'title': activity.get_activity_type_display(),
-            'description': activity.description,
-            'time': activity.created_at,
-            'read': activity.is_read,
-            'icon': activity.get_icon(),
-            'color': activity.get_color()
-        })
-    
-    # REMOVED THE FALLBACK SAMPLE DATA - let template handle empty case
+    # Activities are now provided by context processor
+    # No need to fetch them here anymore!
     
     context = {
         'total_teachers': total_teachers,
         'active_teachers': active_teachers,
         'total_departments': total_departments,
         'total_subjects': total_subjects,
-        'recent_activities': recent_activities,
+        # recent_activities will be added automatically by context processor
     }
     return render(request, 'admin_dashboard/dashboard.html', context)
 
@@ -467,3 +457,31 @@ def test_activity(request):
     
     # Redirect to dashboard to see if it appears
     return redirect('accounts:admin_dashboard')
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """Mark all unread notifications as read for the current user"""
+    try:
+        if request.user.is_staff:
+            # Admin: Mark ALL activities as read
+            updated_count = ActivityLog.objects.filter(
+                is_read=False
+            ).update(is_read=True)
+        else:
+            # Teacher: Mark only their activities as read
+            updated_count = ActivityLog.objects.filter(
+                user=request.user,
+                is_read=False
+            ).update(is_read=True)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'{updated_count} notifications marked as read'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

@@ -2,810 +2,149 @@
 
 {% block title %}Admin Dashboard - Test Banking System{% endblock %}
 
+{% block header_title %}Admin Dashboard{% endblock %}
+{% block header_subtitle %}Overview of system statistics and recent activities{% endblock %}
+
 {% block content %}
-<style>
-    .dashboard-header {
-        background: white;
-        padding: 2rem 0 1rem 0;
-        margin: -20px -20px 2rem -20px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .dashboard-title {
-        color: #2d3748;
-        font-weight: 700;
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .dashboard-subtitle {
-        color: #718096;
-        font-size: 1.1rem;
-        font-weight: 400;
-    }
-    
-    /* Stat Cards */
-    .stat-card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem 1.5rem;
-        text-align: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
-        border: 1px solid #e2e8f0;
-        height: 100%;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 4px;
-        background: linear-gradient(135deg, #4361ee, #3a0ca3);
-    }
-    
-    .stat-card:hover {
-        box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
-        transform: translateY(-5px);
-    }
-    
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1rem;
-        font-size: 1.5rem;
-    }
-    
-    .stat-icon.teachers { background: linear-gradient(135deg, #4361ee, #4cc9f0); }
-    .stat-icon.departments { background: linear-gradient(135deg, #7209b7, #b5179e); }
-    .stat-icon.subjects { background: linear-gradient(135deg, #f72585, #ff9e00); }
-    .stat-icon.total { background: linear-gradient(135deg, #4cc9f0, #4361ee); }
-    
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-        line-height: 1;
-    }
-    
-    .stat-label {
-        color: #718096;
-        font-size: 0.95rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    /* Quick Actions */
-    .action-section {
-        margin: 3rem 0;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2d3748;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .section-title i {
-        margin-right: 0.75rem;
-        color: #4361ee;
-    }
-    
-    .action-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-        gap: 1.5rem;
-    }
-    
-    .action-card {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.3s ease;
-        border: 1px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
-    }
-    
-    .action-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-        color: inherit;
-        border-color: #4361ee;
-    }
-    
-    .action-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1.5rem;
-        font-size: 1.5rem;
-        color: white;
-        flex-shrink: 0;
-    }
-    
-    .action-icon.add-teacher { background: linear-gradient(135deg, #4361ee, #4cc9f0); }
-    .action-icon.add-department { background: linear-gradient(135deg, #7209b7, #b5179e); }
-    .action-icon.add-subject { background: linear-gradient(135deg, #f72585, #ff9e00); }
-    .action-icon.view-files { background: linear-gradient(135deg, #4cc9f0, #4361ee); }
-    
-    .action-content h4 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 0.25rem;
-    }
-    
-    .action-content p {
-        color: #718096;
-        font-size: 0.9rem;
-        margin: 0;
-    }
-    
-    /* System Overview */
-    .overview-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-    }
-    
-    .info-panel {
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
-    }
-    
-    .panel-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .panel-header i {
-        font-size: 1.25rem;
-        color: #4361ee;
-        margin-right: 0.75rem;
-    }
-    
-    .panel-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin: 0;
-    }
-    
-    /* Progress Bar */
-    .progress-container {
-        background: #f7fafc;
-        border-radius: 10px;
-        overflow: hidden;
-        height: 12px;
-        margin: 1rem 0 2rem;
-    }
-    
-    .progress-bar {
-        background: linear-gradient(135deg, #4361ee, #3a0ca3);
-        height: 100%;
-        border-radius: 10px;
-        transition: width 1s ease-in-out;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .progress-bar::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-        animation: shimmer 2s infinite;
-    }
-    
-    @keyframes shimmer {
-        0% { left: -100%; }
-        100% { left: 100%; }
-    }
-    
-    .progress-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 0.5rem;
-    }
-    
-    .progress-label {
-        color: #718096;
-        font-size: 0.9rem;
-    }
-    
-    .progress-value {
-        color: #2d3748;
-        font-weight: 600;
-        font-size: 0.9rem;
-    }
-    
-    /* System Items */
-    .system-item {
-        display: flex;
-        align-items: center;
-        padding: 1rem 0;
-        border-bottom: 1px solid #f7fafc;
-    }
-    
-    .system-item:last-child {
-        border-bottom: none;
-    }
-    
-    .system-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 1rem;
-        color: white;
-        font-size: 1rem;
-        flex-shrink: 0;
-    }
-    
-    .system-icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
-    .system-icon.primary { background: linear-gradient(135deg, #4361ee, #3a0ca3); }
-    .system-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
-    
-    .system-content {
-        flex: 1;
-    }
-    
-    .system-content span {
-        color: #718096;
-        font-size: 0.9rem;
-    }
-    
-    .system-value {
-        color: #2d3748;
-        font-weight: 600;
-        font-size: 1rem;
-    }
-    
-    /* Tips List */
-    .tips-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .tips-list li {
-        padding: 0.75rem 0;
-        color: #718096;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: flex-start;
-    }
-    
-    .tips-list li::before {
-        content: "💡";
-        margin-right: 0.75rem;
-        font-size: 0.8rem;
-        margin-top: 0.1rem;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .dashboard-header {
-            margin: -20px -20px 2rem -20px;
-            padding: 1.5rem 0 1rem 0;
-        }
-        
-        .dashboard-title {
-            font-size: 1.5rem;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-        }
-        
-        .action-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .overview-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .action-card {
-            padding: 1.5rem;
-        }
-        
-        .info-panel {
-            padding: 1.5rem;
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .stat-card {
-            padding: 1.5rem 1rem;
-        }
-        
-        .stat-number {
-            font-size: 1.75rem;
-        }
-        
-        .action-icon {
-            width: 50px;
-            height: 50px;
-            margin-right: 1rem;
-        }
-    }
-    /* Recent Activities Panel */
-.info-panel {
-    background: white;
-    border-radius: 16px;
-    padding: 0;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.panel-header {
-    display: flex;
-    align-items: center;
-    padding: 1.5rem 1.5rem 1rem;
-    border-bottom: 1px solid #e2e8f0;
-    position: relative;
-}
-
-.panel-header i {
-    font-size: 1.25rem;
-    color: #4361ee;
-    margin-right: 0.75rem;
-}
-
-.panel-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #2d3748;
-    margin: 0;
-    flex: 1;
-}
-
-.notification-badge {
-    background: #e53e3e;
-    color: white;
-    border-radius: 20px;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    min-width: 24px;
-    text-align: center;
-}
-
-/* Activities Container */
-.activities-container {
-    flex: 1;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 0.5rem 0;
-}
-
-.activities-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.activities-container::-webkit-scrollbar-track {
-    background: #f7fafc;
-    border-radius: 3px;
-}
-
-.activities-container::-webkit-scrollbar-thumb {
-    background: #cbd5e0;
-    border-radius: 3px;
-}
-
-.activities-container::-webkit-scrollbar-thumb:hover {
-    background: #a0aec0;
-}
-
-/* Activity Items */
-.activity-item {
-    display: flex;
-    align-items: flex-start;
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid #f7fafc;
-    transition: background 0.2s ease;
-    position: relative;
-}
-
-.activity-item:hover {
-    background: #f8f9fa;
-}
-
-.activity-item.unread {
-    background: #ebf8ff;
-    border-left: 3px solid #4361ee;
-}
-
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-.activity-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    background: #f7fafc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 1rem;
-    flex-shrink: 0;
-}
-
-.activity-content {
-    flex: 1;
-    min-width: 0; /* Prevents text overflow */
-}
-
-.activity-title {
-    font-weight: 600;
-    color: #2d3748;
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
-    line-height: 1.3;
-}
-
-.activity-description {
-    color: #4a5568;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    margin-bottom: 0.25rem;
-    word-wrap: break-word;
-}
-
-.activity-time {
-    color: #718096;
-    font-size: 0.75rem;
-    font-weight: 500;
-}
-
-.activity-indicator {
-    width: 8px;
-    height: 8px;
-    background: #4361ee;
-    border-radius: 50%;
-    margin-left: 0.5rem;
-    flex-shrink: 0;
-    margin-top: 0.5rem;
-}
-
-/* Empty State */
-.empty-activities {
-    padding: 3rem 2rem;
-    text-align: center;
-    color: #718096;
-}
-
-.empty-activities i {
-    font-size: 3rem;
-    color: #e2e8f0;
-    margin-bottom: 1rem;
-    display: block;
-}
-
-.empty-activities p {
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-}
-
-.empty-activities small {
-    font-size: 0.8rem;
-}
-
-/* Activities Footer */
-.activities-footer {
-    padding: 1rem 1.5rem;
-    border-top: 1px solid #e2e8f0;
-    background: #f8f9fa;
-}
-
-.view-more-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #4361ee;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-    padding: 0.5rem;
-    border-radius: 6px;
-}
-
-.view-more-btn:hover {
-    background: rgba(67, 97, 238, 0.1);
-    color: #3a0ca3;
-}
-
-.view-more-btn i {
-    margin-left: 0.5rem;
-    transition: transform 0.2s ease;
-}
-
-.view-more-btn:hover i {
-    transform: translateX(3px);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .activities-container {
-        max-height: 300px;
-    }
-    
-    .activity-item {
-        padding: 0.875rem 1rem;
-    }
-    
-    .panel-header {
-        padding: 1.25rem 1rem 0.875rem;
-    }
-    
-    .activities-footer {
-        padding: 0.875rem 1rem;
-    }
-}
-</style>
-
-<!-- Dashboard Header -->
-<div class="dashboard-header">
-    <div class="container">
-        <h1 class="dashboard-title">
-            <i class="bi bi-speedometer2 me-3"></i>Admin Dashboard
-        </h1>
-        <p class="dashboard-subtitle">Welcome back! Here's what's happening with your system today.</p>
-    </div>
-</div>
-
-<div class="container">
-    <!-- Stats Overview -->
-    <div class="row g-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card">
-                <div class="stat-icon teachers">
-                    <i class="bi bi-people-fill"></i>
+<!-- Stats Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+    <!-- Active Teachers Card -->
+    <div class="stat-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-people-fill text-white text-2xl"></i>
                 </div>
-                <div class="stat-number">{{ active_teachers }}</div>
-                <div class="stat-label">Active Teachers</div>
+                <span class="text-xs font-semibold text-green-600 bg-green-100 px-3 py-1 rounded-full">ACTIVE</span>
             </div>
+            <div class="text-3xl font-bold text-gray-800 mb-1">{{ active_teachers }}</div>
+            <div class="text-sm text-gray-500 font-medium">Active Teachers</div>
         </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card">
-                <div class="stat-icon departments">
-                    <i class="bi bi-building"></i>
-                </div>
-                <div class="stat-number">{{ total_departments }}</div>
-                <div class="stat-label">Departments</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card">
-                <div class="stat-icon subjects">
-                    <i class="bi bi-book"></i>
-                </div>
-                <div class="stat-number">{{ total_subjects }}</div>
-                <div class="stat-label">Subjects</div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="stat-card">
-                <div class="stat-icon total">
-                    <i class="bi bi-person-badge"></i>
-                </div>
-                <div class="stat-number">{{ total_teachers }}</div>
-                <div class="stat-label">Total Teachers</div>
+        <div class="bg-gradient-to-r from-green-50 to-green-100 px-6 py-3">
+            <div class="flex items-center text-xs text-green-700">
+                <i class="bi bi-arrow-up-right mr-1"></i>
+                <span>Active in system</span>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="action-section">
-        <h3 class="section-title">
-            <i class="bi bi-lightning"></i>Quick Actions
-        </h3>
-        <div class="action-grid">
-            <a href="{% url 'accounts:add_teacher' %}" class="action-card">
-                <div class="action-icon add-teacher">
-                    <i class="bi bi-person-plus"></i>
+    <!-- Departments Card -->
+    <div class="stat-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-building text-white text-2xl"></i>
                 </div>
-                <div class="action-content">
-                    <h4>Add Teacher</h4>
-                    <p>Create a new teacher account</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'accounts:manage_departments' %}" class="action-card">
-                <div class="action-icon add-department">
-                    <i class="bi bi-building-add"></i>
-                </div>
-                <div class="action-content">
-                    <h4>Manage Departments</h4>
-                    <p>Add or edit departments</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'accounts:manage_subjects' %}" class="action-card">
-                <div class="action-icon add-subject">
-                    <i class="bi bi-journal-plus"></i>
-                </div>
-                <div class="action-content">
-                    <h4>Manage Subjects</h4>
-                    <p>Create or update subjects</p>
-                </div>
-            </a>
-            
-            <a href="{% url 'questionnaires:all_questionnaires' %}" class="action-card">
-                <div class="action-icon view-files">
-                    <i class="bi bi-folder-check"></i>
-                </div>
-                <div class="action-content">
-                    <h4>View All Files</h4>
-                    <p>Browse all questionnaires</p>
-                </div>
-            </a>
+                <span class="text-xs font-semibold text-blue-600 bg-blue-100 px-3 py-1 rounded-full">TOTAL</span>
+            </div>
+            <div class="text-3xl font-bold text-gray-800 mb-1">{{ total_departments }}</div>
+            <div class="text-sm text-gray-500 font-medium">Departments</div>
+        </div>
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-3">
+            <div class="flex items-center text-xs text-blue-700">
+                <i class="bi bi-buildings mr-1"></i>
+                <span>Academic units</span>
+            </div>
         </div>
     </div>
 
-    <!-- System Overview -->
-    <div class="overview-grid">
-        {% comment %} <div class="info-panel">
-            <div class="panel-header">
-                <i class="bi bi-graph-up"></i>
-                <h3 class="panel-title">System Overview</h3>
-            </div>
-            
-            <div class="panel-body">
-                <!-- Teacher Activity Progress -->
-                <div class="progress-section">
-                    <div class="progress-info">
-                        <span class="progress-label">Teacher Activity</span>
-                        <span class="progress-value">{{ active_teachers }} / {{ total_teachers }}</span>
-                    </div>
-                    <div class="progress-container">
-                        {% if total_teachers > 0 %}
-                            {% widthratio active_teachers total_teachers 100 as percentage %}
-                            <div class="progress-bar" style="width: {{ percentage }}%;"></div>
-                        {% else %}
-                            <div class="progress-bar" style="width: 0%;"></div>
-                        {% endif %}
-                    </div>
+    <!-- Subjects Card -->
+    <div class="stat-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-book text-white text-2xl"></i>
                 </div>
-                
-                <!-- System Stats -->
-                <div class="stats-section">
-                    <div class="system-item">
-                        <div class="system-icon primary">
-                            <i class="bi bi-building"></i>
-                        </div>
-                        <div class="system-content">
-                            <span>Departments</span>
-                        </div>
-                        <div class="system-value">{{ total_departments }}</div>
-                    </div>
-                    
-                    <div class="system-item">
-                        <div class="system-icon info">
-                            <i class="bi bi-book"></i>
-                        </div>
-                        <div class="system-content">
-                            <span>Subjects</span>
-                        </div>
-                        <div class="system-value">{{ total_subjects }}</div>
-                    </div>
-                    
-                    <div class="system-item">
-                        <div class="system-icon success">
-                            <i class="bi bi-people"></i>
-                        </div>
-                        <div class="system-content">
-                            <span>Active Teachers</span>
-                        </div>
-                        <div class="system-value">{{ active_teachers }}</div>
-                    </div>
-                    
-                    <div class="system-item">
-                        <div class="system-icon warning">
-                            <i class="bi bi-person-badge"></i>
-                        </div>
-                        <div class="system-content">
-                            <span>Total Teachers</span>
-                        </div>
-                        <div class="system-value">{{ total_teachers }}</div>
-                    </div>
-                </div>
+                <span class="text-xs font-semibold text-purple-600 bg-purple-100 px-3 py-1 rounded-full">COURSES</span>
             </div>
-        </div> {% endcomment %}
+            <div class="text-3xl font-bold text-gray-800 mb-1">{{ total_subjects }}</div>
+            <div class="text-sm text-gray-500 font-medium">Subjects</div>
+        </div>
+        <div class="bg-gradient-to-r from-purple-50 to-purple-100 px-6 py-3">
+            <div class="flex items-center text-xs text-purple-700">
+                <i class="bi bi-journals mr-1"></i>
+                <span>Available courses</span>
+            </div>
+        </div>
+    </div>
 
-        <div class="info-panel">
-            <div class="panel-header">
-                <i class="bi bi-clock-history"></i>
-                <h3 class="panel-title">Recent Activities</h3>
-                <span class="notification-badge">{{ recent_activities|length }}</span>
-            </div>
-            
-            <div class="activities-container">
-                {% for activity in recent_activities %}
-                <div class="activity-item {% if not activity.read %}unread{% endif %}">
-                    <div class="activity-icon">
-                        <i class="{{ activity.icon }} text-{{ activity.color }}"></i>
-                    </div>
-                    <div class="activity-content">
-                        <div class="activity-title">{{ activity.title }}</div>
-                        <div class="activity-description">{{ activity.description }}</div>
-                        <div class="activity-time">{{ activity.time|timesince }} ago</div>
-                    </div>
-                    {% if not activity.read %}
-                    <div class="activity-indicator"></div>
-                    {% endif %}
+    <!-- Total Teachers Card -->
+    <div class="stat-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+                    <i class="bi bi-person-badge text-white text-2xl"></i>
                 </div>
-                {% empty %}
-                <div class="empty-activities">
-                    <i class="bi bi-inbox"></i>
-                    <p>No recent activities</p>
-                    <small class="text-muted">Activities will appear here as they happen</small>
-                </div>
-                {% endfor %}
+                <span class="text-xs font-semibold text-orange-600 bg-orange-100 px-3 py-1 rounded-full">ALL</span>
             </div>
-            
-            {% if recent_activities %}
-            <div class="activities-footer">
-                <a href="#" class="view-more-btn">
-                    <i class="bi bi-arrow-right"></i>
-                    View All Activities
-                </a>
+            <div class="text-3xl font-bold text-gray-800 mb-1">{{ total_teachers }}</div>
+            <div class="text-sm text-gray-500 font-medium">Total Teachers</div>
+        </div>
+        <div class="bg-gradient-to-r from-orange-50 to-orange-100 px-6 py-3">
+            <div class="flex items-center text-xs text-orange-700">
+                <i class="bi bi-people mr-1"></i>
+                <span>Registered users</span>
             </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<script>
-    // Animate progress bars on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            const currentWidth = bar.style.width;
-            bar.style.width = '0%';
-            setTimeout(() => {
-                bar.style.width = currentWidth;
-            }, 300);
-        });
-    });
-</script>
+<!-- Quick Actions -->
+<div class="mb-8">
+    <div class="flex items-center mb-6">
+        <i class="bi bi-lightning-fill text-yellow-500 text-2xl mr-3"></i>
+        <h3 class="text-2xl font-bold text-gray-800">Quick Actions</h3>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <a href="{% url 'accounts:add_teacher' %}" class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-2 border-transparent hover:border-green-500">
+            <div class="flex items-start space-x-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="bi bi-person-plus text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-green-600 transition-colors">Add Teacher</h4>
+                    <p class="text-sm text-gray-500">Create a new teacher account</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'accounts:manage_departments' %}" class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-2 border-transparent hover:border-blue-500">
+            <div class="flex items-start space-x-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="bi bi-building-add text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-blue-600 transition-colors">Manage Departments</h4>
+                    <p class="text-sm text-gray-500">Add or edit departments</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'accounts:manage_subjects' %}" class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-2 border-transparent hover:border-purple-500">
+            <div class="flex items-start space-x-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="bi bi-journal-plus text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-purple-600 transition-colors">Manage Subjects</h4>
+                    <p class="text-sm text-gray-500">Create or update subjects</p>
+                </div>
+            </div>
+        </a>
+        
+        <a href="{% url 'questionnaires:all_questionnaires' %}" class="group bg-white rounded-xl shadow-md hover:shadow-xl transition-all p-6 border-2 border-transparent hover:border-orange-500">
+            <div class="flex items-start space-x-4">
+                <div class="w-14 h-14 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <i class="bi bi-folder-check text-white text-2xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h4 class="text-lg font-bold text-gray-800 mb-1 group-hover:text-orange-600 transition-colors">View All Files</h4>
+                    <p class="text-sm text-gray-500">Browse all questionnaires</p>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
 {% endblock %}

@@ -4,6 +4,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+# Add this import at the top if not already there
+from django.utils import timezone
 
 class Department(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -122,3 +124,14 @@ class ActivityLog(models.Model):
             description=description,
             metadata=metadata or {}
         )
+        
+# Add this method to the ActivityLog class (around line 95, after get_color method)
+def is_login_activity(self):
+    """Check if this is a login activity"""
+    return self.activity_type == 'user_login'
+
+# Optional: Add this property for easier template access
+@property
+def time(self):
+    """Alias for created_at to match template expectations"""
+    return self.created_at
