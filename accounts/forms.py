@@ -5,6 +5,8 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import TeacherProfile, Department, Subject
+from .models import Department, Subject
+
 
 class TeacherCreationForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=True)
@@ -70,4 +72,25 @@ class SubjectForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
             'departments': forms.CheckboxSelectMultiple(),
+        }
+        
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name', 'code', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
+
+class SubjectForm(forms.ModelForm):
+    class Meta:
+        model = Subject
+        fields = ['departments', 'code', 'name', 'description']
+        widgets = {
+            'departments': forms.CheckboxSelectMultiple(),
+            'code': forms.TextInput(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }

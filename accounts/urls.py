@@ -1,4 +1,7 @@
-# accounts/urls.py
+
+# ============================================================================
+# FILE: accounts/urls.py
+# ============================================================================
 from django.urls import path
 from . import views
 
@@ -10,16 +13,22 @@ urlpatterns = [
     
     # Admin URLs
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    
+    # Teacher Management
     path('manage-teachers/', views.manage_teachers, name='manage_teachers'),
     path('add-teacher/', views.add_teacher, name='add_teacher'),
     path('edit-teacher/<int:pk>/', views.edit_teacher, name='edit_teacher'),
     path('delete-teacher/<int:pk>/', views.delete_teacher, name='delete_teacher'),
     
+    # Department Management
     path('manage-departments/', views.manage_departments, name='manage_departments'),
+    path('add-department/', views.add_department, name='add_department'),  # NEW
     path('edit-department/<int:pk>/', views.edit_department, name='edit_department'),
     path('delete-department/<int:pk>/', views.delete_department, name='delete_department'),
     
+    # Subject Management
     path('manage-subjects/', views.manage_subjects, name='manage_subjects'),
+    path('add-subject/', views.add_subject, name='add_subject'),  # NEW
     path('edit-subject/<int:pk>/', views.edit_subject, name='edit_subject'),
     path('delete-subject/<int:pk>/', views.delete_subject, name='delete_subject'),
     
