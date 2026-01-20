@@ -1,5 +1,6 @@
 # ============================================================================
 # FILE: questionnaires/views.py
+# FIXED VERSION WITH ACTIVITY LOGGING
 # ============================================================================
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,7 +11,7 @@ from django.core.paginator import Paginator
 from django.http import FileResponse, Http404, JsonResponse
 from .models import Questionnaire, ExtractedQuestion, QuestionType
 from .forms import QuestionnaireUploadForm, QuestionnaireEditForm, QuestionnaireFilterForm
-from accounts.models import TeacherProfile, Department, Subject
+from accounts.models import TeacherProfile, Department, Subject, ActivityLog  # ← ADDED ActivityLog
 from .services import QuestionnaireExtractor
 
 def is_admin(user):
@@ -35,6 +36,16 @@ def upload_questionnaire(request):
             questionnaire.uploader = teacher
             questionnaire.save()
             
+            # ============================================================================
+            # ADD ACTIVITY LOG FOR QUESTIONNAIRE UPLOAD
+            # ============================================================================
+            ActivityLog.objects.create(
+                activity_type='questionnaire_uploaded',
+                user=request.user,
+                description=f'You uploaded "{questionnaire.title}" for {questionnaire.subject.code}'
+            )
+            # ============================================================================
+            
             # Check if auto-extraction is enabled
             auto_extract = form.cleaned_data.get('auto_extract')
             question_types = form.cleaned_data.get('question_types')
@@ -58,6 +69,16 @@ def upload_questionnaire(request):
                     questionnaire.is_extracted = True
                     questionnaire.save()
                     
+                    # ============================================================================
+                    # ADD ACTIVITY LOG FOR SUCCESSFUL EXTRACTION
+                    # ============================================================================
+                    ActivityLog.objects.create(
+                        activity_type='questions_extracted',
+                        user=request.user,
+                        description=f'Successfully extracted {len(created_questions)} questions from "{questionnaire.title}"'
+                    )
+                    # ============================================================================
+                    
                     messages.success(
                         request, 
                         f'Successfully uploaded and extracted {len(created_questions)} questions!'
@@ -70,6 +91,16 @@ def upload_questionnaire(request):
                     questionnaire.extraction_status = 'failed'
                     questionnaire.extraction_error = str(e)
                     questionnaire.save()
+                    
+                    # ============================================================================
+                    # ADD ACTIVITY LOG FOR FAILED EXTRACTION
+                    # ============================================================================
+                    ActivityLog.objects.create(
+                        activity_type='extraction_failed',
+                        user=request.user,
+                        description=f'Question extraction failed for "{questionnaire.title}"'
+                    )
+                    # ============================================================================
                     
                     messages.warning(
                         request,
@@ -113,6 +144,17 @@ def review_extracted_questions(request, pk):
         
         if action == 'approve_all':
             extracted_questions.update(is_approved=True)
+            
+            # ============================================================================
+            # ADD ACTIVITY LOG FOR APPROVING QUESTIONS
+            # ============================================================================
+            ActivityLog.objects.create(
+                activity_type='questions_approved',
+                user=request.user,
+                description=f'Approved {extracted_questions.count()} questions for "{questionnaire.title}"'
+            )
+            # ============================================================================
+            
             messages.success(request, 'All questions approved!')
             return redirect('questionnaires:my_uploads')
         
@@ -185,6 +227,16 @@ def retry_extraction(request, pk):
             questionnaire.extraction_error = None
             questionnaire.save()
             
+            # ============================================================================
+            # ADD ACTIVITY LOG FOR RETRY EXTRACTION
+            # ============================================================================
+            ActivityLog.objects.create(
+                activity_type='questions_extracted',
+                user=request.user,
+                description=f'Re-extracted {len(created_questions)} questions from "{questionnaire.title}"'
+            )
+            # ============================================================================
+            
             messages.success(request, f'Successfully extracted {len(created_questions)} questions!')
             return redirect('questionnaires:review_extracted', pk=questionnaire.pk)
         
@@ -251,6 +303,17 @@ def edit_questionnaire(request, pk):
         form = QuestionnaireEditForm(request.POST, instance=questionnaire)
         if form.is_valid():
             form.save()
+            
+            # ============================================================================
+            # ADD ACTIVITY LOG FOR EDITING QUESTIONNAIRE
+            # ============================================================================
+            ActivityLog.objects.create(
+                activity_type='questionnaire_updated',
+                user=request.user,
+                description=f'Updated questionnaire "{questionnaire.title}"'
+            )
+            # ============================================================================
+            
             messages.success(request, 'Questionnaire updated successfully')
             if request.user.is_staff:
                 return redirect('questionnaires:all_questionnaires')
@@ -281,6 +344,18 @@ def delete_questionnaire(request, pk):
         return redirect('questionnaires:browse_questionnaires')
     
     if request.method == 'POST':
+        questionnaire_title = questionnaire.title  # Save title before deletion
+        
+        # ============================================================================
+        # ADD ACTIVITY LOG BEFORE DELETING
+        # ============================================================================
+        ActivityLog.objects.create(
+            activity_type='questionnaire_deleted',
+            user=request.user,
+            description=f'Deleted questionnaire "{questionnaire_title}"'
+        )
+        # ============================================================================
+        
         questionnaire.file.delete()
         questionnaire.delete()
         messages.success(request, 'Questionnaire deleted successfully')
@@ -402,6 +477,19 @@ def download_questionnaire(request, pk):
         user=request.user if request.user.is_authenticated else None,
         ip_address=get_client_ip(request)
     )
+    
+    # ============================================================================
+    # ADD ACTIVITY LOG FOR DOWNLOAD (only if not downloading own file)
+    # ============================================================================
+    if hasattr(request.user, 'teacher_profile'):
+        if questionnaire.uploader != request.user.teacher_profile:
+            # Someone else downloaded your file - log to the uploader
+            ActivityLog.objects.create(
+                activity_type='questionnaire_downloaded',
+                user=questionnaire.uploader.user,
+                description=f'{request.user.get_full_name()} downloaded your "{questionnaire.title}"'
+            )
+    # ============================================================================
     
     try:
         return FileResponse(
