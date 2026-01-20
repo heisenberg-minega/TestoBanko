@@ -10,6 +10,7 @@ app_name = 'questionnaires'
 urlpatterns = [
     # Upload and management
     path('upload/', views.upload_questionnaire, name='upload_questionnaire'),
+    path('generate/', views.generate_questionnaire, name='generate_questionnaire'),
     path('my-uploads/', views.my_uploads, name='my_uploads'),
     path('browse/', views.browse_questionnaires, name='browse_questionnaires'),
     path('all/', views.all_questionnaires, name='all_questionnaires'),

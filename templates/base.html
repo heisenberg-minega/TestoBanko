@@ -92,15 +92,35 @@
                     <span class="font-medium">All Questionnaires</span>
                 </a>
             {% else %}
-                <!-- Teacher Navigation -->
+                <!-- Teacher Navigation with Upload Dropdown -->
                 <a href="{% url 'accounts:teacher_dashboard' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 hover:bg-blue-700 transition-colors {% if 'teacher-dashboard' in request.path %}bg-blue-700 shadow-lg{% endif %}">
                     <i class="bi bi-speedometer2 text-xl"></i>
                     <span class="font-medium">Dashboard</span>
                 </a>
-                <a href="{% url 'questionnaires:upload_questionnaire' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 hover:bg-blue-700 transition-colors {% if '/questionnaires/upload' in request.path %}bg-blue-700 shadow-lg{% endif %}">
-                    <i class="bi bi-upload text-xl"></i>
-                    <span class="font-medium">Upload</span>
-                </a>
+
+                <!-- Upload Dropdown Menu -->
+                <div class="relative mb-2">
+                    <button id="uploadDropdownBtn" class="flex items-center justify-between w-full space-x-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors {% if '/questionnaires/upload' in request.path or '/questionnaires/generate' in request.path %}bg-blue-700 shadow-lg{% endif %}">
+                        <div class="flex items-center space-x-3">
+                            <i class="bi bi-upload text-xl"></i>
+                            <span class="font-medium">Upload</span>
+                        </div>
+                        <i class="bi bi-chevron-down text-sm transition-transform duration-200" id="uploadDropdownIcon"></i>
+                    </button>
+                    
+                    <!-- Dropdown Content -->
+                    <div id="uploadDropdownContent" class="hidden mt-2 ml-4 space-y-1">
+                        <a href="{% url 'questionnaires:upload_questionnaire' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors {% if '/questionnaires/upload' in request.path %}bg-blue-600{% endif %}">
+                            <i class="bi bi-file-earmark-arrow-up text-lg"></i>
+                            <span class="text-sm font-medium">Upload Module</span>
+                        </a>
+                        <a href="{% url 'questionnaires:generate_questionnaire' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors {% if '/questionnaires/generate' in request.path %}bg-blue-600{% endif %}">
+                            <i class="bi bi-robot text-lg"></i>
+                            <span class="text-sm font-medium">Generate with AI</span>
+                        </a>
+                    </div>
+                </div>
+
                 <a href="{% url 'questionnaires:my_uploads' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg mb-2 hover:bg-blue-700 transition-colors {% if '/questionnaires/my-uploads' in request.path %}bg-blue-700 shadow-lg{% endif %}">
                     <i class="bi bi-file-person text-xl"></i>
                     <span class="font-medium">My Uploads</span>
@@ -453,6 +473,38 @@
             {% endfor %}
         {% endif %}
     });
+
+    // Upload Dropdown Toggle Script (add to existing scripts in base.html)
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadDropdownBtn = document.getElementById('uploadDropdownBtn');
+    const uploadDropdownContent = document.getElementById('uploadDropdownContent');
+    const uploadDropdownIcon = document.getElementById('uploadDropdownIcon');
+    
+    if (uploadDropdownBtn && uploadDropdownContent) {
+        // Toggle dropdown on click
+        uploadDropdownBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const isHidden = uploadDropdownContent.classList.contains('hidden');
+            
+            if (isHidden) {
+                uploadDropdownContent.classList.remove('hidden');
+                uploadDropdownIcon.style.transform = 'rotate(180deg)';
+            } else {
+                uploadDropdownContent.classList.add('hidden');
+                uploadDropdownIcon.style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        // Keep dropdown open if on upload or generate page
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/questionnaires/upload') || currentPath.includes('/questionnaires/generate')) {
+            uploadDropdownContent.classList.remove('hidden');
+            uploadDropdownIcon.style.transform = 'rotate(180deg)';
+        }
+    }
+});
 </script>
 </body>
 </html>

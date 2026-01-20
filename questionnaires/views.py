@@ -22,6 +22,7 @@ def is_teacher(user):
 
 @login_required
 def upload_questionnaire(request):
+    """Upload module/questionnaire WITHOUT AI extraction"""
     if request.user.is_staff:
         messages.error(request, 'Admins cannot upload questionnaires')
         return redirect('accounts:admin_dashboard')
@@ -46,70 +47,8 @@ def upload_questionnaire(request):
             )
             # ============================================================================
             
-            # Check if auto-extraction is enabled
-            auto_extract = form.cleaned_data.get('auto_extract')
-            question_types = form.cleaned_data.get('question_types')
-            
-            if auto_extract and question_types:
-                try:
-                    questionnaire.extraction_status = 'processing'
-                    questionnaire.save()
-                    
-                    # Get selected question types
-                    type_names = [qt.name for qt in question_types]
-                    
-                    # Extract questions using AI
-                    extractor = QuestionnaireExtractor()
-                    created_questions = extractor.process_questionnaire(
-                        questionnaire, 
-                        type_names
-                    )
-                    
-                    questionnaire.extraction_status = 'completed'
-                    questionnaire.is_extracted = True
-                    questionnaire.save()
-                    
-                    # ============================================================================
-                    # ADD ACTIVITY LOG FOR SUCCESSFUL EXTRACTION
-                    # ============================================================================
-                    ActivityLog.objects.create(
-                        activity_type='questions_extracted',
-                        user=request.user,
-                        description=f'Successfully extracted {len(created_questions)} questions from "{questionnaire.title}"'
-                    )
-                    # ============================================================================
-                    
-                    messages.success(
-                        request, 
-                        f'Successfully uploaded and extracted {len(created_questions)} questions!'
-                    )
-                    
-                    # Redirect to review extracted questions
-                    return redirect('questionnaires:review_extracted', pk=questionnaire.pk)
-                
-                except Exception as e:
-                    questionnaire.extraction_status = 'failed'
-                    questionnaire.extraction_error = str(e)
-                    questionnaire.save()
-                    
-                    # ============================================================================
-                    # ADD ACTIVITY LOG FOR FAILED EXTRACTION
-                    # ============================================================================
-                    ActivityLog.objects.create(
-                        activity_type='extraction_failed',
-                        user=request.user,
-                        description=f'Question extraction failed for "{questionnaire.title}"'
-                    )
-                    # ============================================================================
-                    
-                    messages.warning(
-                        request,
-                        f'File uploaded but extraction failed: {str(e)}. You can retry extraction later.'
-                    )
-                    return redirect('questionnaires:my_uploads')
-            else:
-                messages.success(request, 'Questionnaire uploaded successfully!')
-                return redirect('questionnaires:my_uploads')
+            messages.success(request, 'Module uploaded successfully!')
+            return redirect('questionnaires:my_uploads')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -119,6 +58,109 @@ def upload_questionnaire(request):
         'form': form
     })
 
+
+@login_required
+def generate_questionnaire(request):
+    """Generate questionnaire WITH AI extraction"""
+    if request.user.is_staff:
+        messages.error(request, 'Admins cannot generate questionnaires')
+        return redirect('accounts:admin_dashboard')
+    
+    teacher = get_object_or_404(TeacherProfile, user=request.user)
+    
+    if request.method == 'POST':
+        form = QuestionnaireUploadForm(request.POST, request.FILES, user=request.user)
+        
+        if form.is_valid():
+            questionnaire = form.save(commit=False)
+            questionnaire.uploader = teacher
+            questionnaire.save()
+            
+            # ============================================================================
+            # ADD ACTIVITY LOG FOR QUESTIONNAIRE UPLOAD
+            # ============================================================================
+            ActivityLog.objects.create(
+                activity_type='questionnaire_uploaded',
+                user=request.user,
+                description=f'You uploaded "{questionnaire.title}" for AI generation'
+            )
+            # ============================================================================
+            
+            # Get selected question types (required for generation)
+            question_types = form.cleaned_data.get('question_types')
+            
+            if not question_types:
+                messages.error(request, 'Please select at least one question type.')
+                return render(request, 'teacher_dashboard/generate_questionnaire.html', {
+                    'form': form
+                })
+            
+            try:
+                questionnaire.extraction_status = 'processing'
+                questionnaire.save()
+                
+                # Get selected question types
+                type_names = [qt.name for qt in question_types]
+                
+                # Extract questions using AI
+                extractor = QuestionnaireExtractor()
+                created_questions = extractor.process_questionnaire(
+                    questionnaire, 
+                    type_names
+                )
+                
+                questionnaire.extraction_status = 'completed'
+                questionnaire.is_extracted = True
+                questionnaire.save()
+                
+                # ============================================================================
+                # ADD ACTIVITY LOG FOR SUCCESSFUL EXTRACTION
+                # ============================================================================
+                ActivityLog.objects.create(
+                    activity_type='questions_extracted',
+                    user=request.user,
+                    description=f'Successfully extracted {len(created_questions)} questions from "{questionnaire.title}"'
+                )
+                # ============================================================================
+                
+                messages.success(
+                    request, 
+                    f'Successfully generated {len(created_questions)} questions using AI!'
+                )
+                
+                # Redirect to review extracted questions
+                return redirect('questionnaires:review_extracted', pk=questionnaire.pk)
+            
+            except Exception as e:
+                questionnaire.extraction_status = 'failed'
+                questionnaire.extraction_error = str(e)
+                questionnaire.save()
+                
+                # ============================================================================
+                # ADD ACTIVITY LOG FOR FAILED EXTRACTION
+                # ============================================================================
+                ActivityLog.objects.create(
+                    activity_type='extraction_failed',
+                    user=request.user,
+                    description=f'Question generation failed for "{questionnaire.title}"'
+                )
+                # ============================================================================
+                
+                messages.error(
+                    request,
+                    f'AI generation failed: {str(e)}. Please try again or contact support.'
+                )
+                return render(request, 'teacher_dashboard/generate_questionnaire.html', {
+                    'form': form
+                })
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = QuestionnaireUploadForm(user=request.user)
+    
+    return render(request, 'teacher_dashboard/generate_questionnaire.html', {
+        'form': form
+    })
 
 @login_required
 def review_extracted_questions(request, pk):
