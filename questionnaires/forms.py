@@ -3,7 +3,7 @@
 # ============================================================================
 
 from django import forms
-from .models import Questionnaire
+from .models import Questionnaire, QuestionType
 from accounts.models import Department, Subject
 
 class QuestionnaireUploadForm(forms.ModelForm):
@@ -19,6 +19,22 @@ class QuestionnaireUploadForm(forms.ModelForm):
         queryset=Subject.objects.none(),
         required=True,
         label="Subject"
+    )
+    
+    # AI Extraction fields
+    question_types = forms.ModelMultipleChoiceField(
+        queryset=QuestionType.objects.filter(is_active=True),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+        label="Question Types to Extract",
+        help_text="Select the types of questions to extract from the uploaded file"
+    )
+    
+    auto_extract = forms.BooleanField(
+        required=False,
+        initial=True,
+        label="Enable AI extraction",
+        help_text="Automatically analyze and extract questions from the uploaded file"
     )
     
     class Meta:
@@ -60,6 +76,19 @@ class QuestionnaireUploadForm(forms.ModelForm):
                 raise forms.ValidationError('File size must be under 10MB')
         
         return file
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        auto_extract = cleaned_data.get('auto_extract')
+        question_types = cleaned_data.get('question_types')
+        
+        if auto_extract and not question_types:
+            raise forms.ValidationError(
+                'Please select at least one question type to extract, or disable AI extraction.'
+            )
+        
+        return cleaned_data
+
 
 class QuestionnaireEditForm(forms.ModelForm):
     class Meta:
@@ -68,6 +97,7 @@ class QuestionnaireEditForm(forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
 
 class QuestionnaireFilterForm(forms.Form):
     department = forms.ModelChoiceField(

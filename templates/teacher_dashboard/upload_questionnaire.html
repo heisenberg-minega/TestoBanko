@@ -1,12 +1,9 @@
-<!-- ============================================================================
-FILE: templates/teacher_dashboard/upload_questionnaire.html
-============================================================================ -->
 {% extends 'base.html' %}
 
 {% block title %}Upload Questionnaire - Teacher{% endblock %}
 
 {% block header_title %}Upload Questionnaire{% endblock %}
-{% block header_subtitle %}Add a new questionnaire to the test bank system{% endblock %}
+{% block header_subtitle %}Add a new questionnaire and auto-extract questions{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
@@ -74,7 +71,6 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
 
                 <!-- Department and Subject -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Department -->
                     <div>
                         <label for="id_department" class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="bi bi-building text-blue-500 mr-1"></i>
@@ -89,7 +85,6 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
                         {% endif %}
                     </div>
 
-                    <!-- Subject -->
                     <div>
                         <label for="id_subject" class="block text-sm font-semibold text-gray-700 mb-2">
                             <i class="bi bi-book text-purple-500 mr-1"></i>
@@ -117,6 +112,7 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
                         <input 
                             type="file" 
                             name="file" 
+                            id="id_file"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
                             required
                         >
@@ -133,17 +129,77 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
                     </p>
                 </div>
 
+                <!-- AI Extraction Options -->
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-6 border-2 border-purple-200">
+                    <div class="flex items-center mb-4">
+                        <i class="bi bi-robot text-3xl text-purple-600 mr-3"></i>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">AI-Powered Question Extraction</h3>
+                            <p class="text-sm text-gray-600">Automatically generate questions from your uploaded content</p>
+                        </div>
+                    </div>
+
+                    <!-- Auto Extract Toggle -->
+                    <div class="mb-4">
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="auto_extract" 
+                                id="id_auto_extract"
+                                {% if form.auto_extract.value %}checked{% endif %}
+                                class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                            >
+                            <span class="ml-3 text-sm font-semibold text-gray-700">Enable AI extraction</span>
+                        </label>
+                    </div>
+
+                    <!-- Question Types Selection -->
+                    <div id="questionTypesContainer" style="display: {% if form.auto_extract.value %}block{% else %}none{% endif %};">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">
+                            <i class="bi bi-list-check text-purple-500 mr-1"></i>
+                            Select Question Types to Extract *
+                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {% for question_type in form.question_types %}
+                                <label class="flex items-center p-3 bg-white rounded-lg border-2 border-gray-200 hover:border-purple-400 cursor-pointer transition-all">
+                                    {{ question_type.tag }}
+                                    <span class="ml-3 text-sm font-medium text-gray-700">{{ question_type.choice_label }}</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        {% if form.question_types.errors %}
+                            <p class="text-red-500 text-sm mt-2 flex items-center">
+                                <i class="bi bi-exclamation-circle mr-1"></i>
+                                {{ form.question_types.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="text-xs text-gray-600 mt-3">
+                            <i class="bi bi-lightbulb text-yellow-500 mr-1"></i>
+                            Select multiple types to get a comprehensive question bank
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Form-wide Errors -->
+                {% if form.non_field_errors %}
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                        {% for error in form.non_field_errors %}
+                            <p class="text-red-700 text-sm">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
                 <!-- Buttons -->
                 <div class="flex space-x-3 pt-4">
                     <button 
                         type="submit" 
                         class="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg flex items-center justify-center"
                     >
-                        <i class="bi bi-upload mr-2"></i> Upload Questionnaire
+                        <i class="bi bi-upload mr-2"></i> Upload & Extract Questions
                     </button>
                     <a 
                         href="{% url 'accounts:teacher_dashboard' %}" 
-                        class="flex-1 bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-all text-center"
+                        class="flex-1 bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-all text-center flex items-center justify-center"
                     >
                         <i class="bi bi-x-circle mr-2"></i> Cancel
                     </a>
@@ -171,27 +227,23 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
             <ul class="space-y-3 text-sm text-gray-700">
                 <li class="flex items-start">
                     <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                    <span>Provide a clear, descriptive title</span>
+                    <span>Upload content-rich materials for best extraction results</span>
                 </li>
                 <li class="flex items-start">
                     <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                    <span>Add a brief description of the questionnaire</span>
+                    <span>AI will analyze content and generate relevant questions</span>
                 </li>
                 <li class="flex items-start">
                     <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                    <span>Select the correct department and subject</span>
+                    <span>Select multiple question types for variety</span>
                 </li>
                 <li class="flex items-start">
                     <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                    <span>Ensure file is in an acceptable format</span>
+                    <span>Review and edit extracted questions before use</span>
                 </li>
                 <li class="flex items-start">
                     <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
                     <span>Maximum file size is 10MB</span>
-                </li>
-                <li class="flex items-start">
-                    <i class="bi bi-check-circle-fill text-green-500 mr-2 mt-0.5 flex-shrink-0"></i>
-                    <span>Files are organized by department and subject</span>
                 </li>
             </ul>
         </div>
@@ -212,7 +264,6 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
     const subjectSelect = document.getElementById('id_subject');
     
     if (departmentSelect && subjectSelect) {
-        // Add styling classes to Django-generated selects with border outline
         departmentSelect.className = 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors';
         subjectSelect.className = 'w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 transition-colors';
         
@@ -238,21 +289,27 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
         });
     }
 
+    // Auto Extract Toggle
+    const autoExtractCheckbox = document.getElementById('id_auto_extract');
+    const questionTypesContainer = document.getElementById('questionTypesContainer');
+    
+    if (autoExtractCheckbox && questionTypesContainer) {
+        autoExtractCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                questionTypesContainer.style.display = 'block';
+            } else {
+                questionTypesContainer.style.display = 'none';
+            }
+        });
+    }
+
     // Guidelines Modal functionality
     const guidelinesBtn = document.getElementById('guidelinesBtn');
     const guidelinesModal = document.getElementById('guidelinesModal');
     const closeModal = document.getElementById('closeModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
-    console.log('Modal elements found:', {
-        guidelinesBtn: !!guidelinesBtn,
-        guidelinesModal: !!guidelinesModal,
-        closeModal: !!closeModal,
-        closeModalBtn: !!closeModalBtn
-    });
-
     function openModal() {
-        console.log('Opening modal');
         if (guidelinesModal) {
             guidelinesModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -260,7 +317,6 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
     }
 
     function closeModalFunc() {
-        console.log('Closing modal');
         if (guidelinesModal) {
             guidelinesModal.style.display = 'none';
             document.body.style.overflow = 'auto';
@@ -270,28 +326,18 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
     if (guidelinesBtn) {
         guidelinesBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            e.stopPropagation();
             openModal();
         });
     }
 
     if (closeModal) {
-        closeModal.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModalFunc();
-        });
+        closeModal.addEventListener('click', closeModalFunc);
     }
 
     if (closeModalBtn) {
-        closeModalBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModalFunc();
-        });
+        closeModalBtn.addEventListener('click', closeModalFunc);
     }
 
-    // Close modal when clicking outside
     if (guidelinesModal) {
         guidelinesModal.addEventListener('click', function(e) {
             if (e.target === guidelinesModal) {
@@ -300,7 +346,6 @@ FILE: templates/teacher_dashboard/upload_questionnaire.html
         });
     }
 
-    // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && guidelinesModal && guidelinesModal.style.display === 'flex') {
             closeModalFunc();

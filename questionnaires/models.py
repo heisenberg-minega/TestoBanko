@@ -1,6 +1,10 @@
-# questionnaires/models.py
+# ============================================================================
+# FILE: questionnaires/models.py
+# ============================================================================
+
 from django.db import models
 from accounts.models import TeacherProfile, Department, Subject
+from django.contrib.auth.models import User
 import os
 
 def questionnaire_upload_path(instance, filename):
@@ -26,6 +30,20 @@ class Questionnaire(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    # AI Extraction fields
+    is_extracted = models.BooleanField(default=False, help_text='Whether questions have been extracted')
+    extraction_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('processing', 'Processing'),
+            ('completed', 'Completed'),
+            ('failed', 'Failed')
+        ],
+        default='pending'
+    )
+    extraction_error = models.TextField(blank=True, null=True)
+    
     class Meta:
         ordering = ['-uploaded_at']
     
@@ -48,7 +66,104 @@ class Questionnaire(models.Model):
             self.file_size = self.file.size
             self.file_type = self.get_file_extension()
         super().save(*args, **kwargs)
-        
+
+
+class QuestionType(models.Model):
+    """Types of questions that can be extracted"""
+    MULTIPLE_CHOICE = 'multiple_choice'
+    TRUE_FALSE = 'true_false'
+    IDENTIFICATION = 'identification'
+    ESSAY = 'essay'
+    FILL_BLANK = 'fill_blank'
+    MATCHING = 'matching'
+    
+    TYPE_CHOICES = [
+        (MULTIPLE_CHOICE, 'Multiple Choice'),
+        (TRUE_FALSE, 'True/False'),
+        (IDENTIFICATION, 'Identification'),
+        (ESSAY, 'Essay'),
+        (FILL_BLANK, 'Fill in the Blanks'),
+        (MATCHING, 'Matching Type'),
+    ]
+    
+    name = models.CharField(max_length=50, choices=TYPE_CHOICES, unique=True)
+    description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.get_name_display()
+    
+    class Meta:
+        ordering = ['name']
+
+
+class ExtractedQuestion(models.Model):
+    """Questions extracted from uploaded questionnaire"""
+    questionnaire = models.ForeignKey(
+        Questionnaire, 
+        on_delete=models.CASCADE, 
+        related_name='extracted_questions'
+    )
+    question_type = models.ForeignKey(QuestionType, on_delete=models.PROTECT)
+    question_text = models.TextField()
+    
+    # For multiple choice
+    option_a = models.TextField(blank=True, null=True)
+    option_b = models.TextField(blank=True, null=True)
+    option_c = models.TextField(blank=True, null=True)
+    option_d = models.TextField(blank=True, null=True)
+    
+    # For various question types
+    correct_answer = models.TextField()
+    explanation = models.TextField(blank=True, null=True)
+    points = models.IntegerField(default=1)
+    difficulty = models.CharField(
+        max_length=20, 
+        choices=[
+            ('easy', 'Easy'),
+            ('medium', 'Medium'),
+            ('hard', 'Hard')
+        ], 
+        default='medium'
+    )
+    
+    is_approved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"{self.question_type} - {self.question_text[:50]}"
+
+
+class GeneratedTest(models.Model):
+    """Test generated from extracted questions"""
+    questionnaire = models.ForeignKey(
+        Questionnaire, 
+        on_delete=models.CASCADE, 
+        related_name='generated_tests'
+    )
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    question_types = models.ManyToManyField(QuestionType)
+    questions = models.ManyToManyField(ExtractedQuestion)
+    
+    total_points = models.IntegerField(default=0)
+    time_limit = models.IntegerField(null=True, blank=True, help_text="Time limit in minutes")
+    
+    is_published = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return self.title
+
+
 class Download(models.Model):
     """Track questionnaire downloads"""
     questionnaire = models.ForeignKey(
@@ -57,7 +172,7 @@ class Download(models.Model):
         related_name='downloads'
     )
     user = models.ForeignKey(
-        'auth.User',
+        User,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

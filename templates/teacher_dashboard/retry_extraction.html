@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Retry Extraction - {{ questionnaire.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-6">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Retry Question Extraction</h1>
+        <p class="text-gray-600">{{ questionnaire.title }}</p>
+    </div>
+
+    {% if questionnaire.extraction_error %}
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+        <div class="flex items-center">
+            <i class="bi bi-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+            <div>
+                <h3 class="text-red-800 font-semibold">Previous Extraction Failed</h3>
+                <p class="text-red-700 text-sm mt-1">{{ questionnaire.extraction_error }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-xl shadow-lg p-8">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">
+                    <i class="bi bi-list-check text-purple-500 mr-2"></i>
+                    Select Question Types to Extract
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {% for qt in question_types %}
+                    <label class="flex items-center p-4 bg-gray-50 rounded-lg border-2 border-gray-200 hover:border-purple-400 cursor-pointer transition-all">
+                        <input 
+                            type="checkbox" 
+                            name="question_types" 
+                            value="{{ qt.id }}"
+                            class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500"
+                        >
+                        <div class="ml-3">
+                            <span class="font-semibold text-gray-800">{{ qt.get_name_display }}</span>
+                            {% if qt.description %}
+                            <p class="text-xs text-gray-600 mt-1">{{ qt.description }}</p>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <p class="text-sm text-blue-800">
+                    <i class="bi bi-info-circle mr-2"></i>
+                    This will delete all previously extracted questions and generate new ones based on your selection.
+                </p>
+            </div>
+
+            <div class="flex gap-4">
+                <button 
+                    type="submit"
+                    class="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-bold py-3 px-6 rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all"
+                >
+                    <i class="bi bi-arrow-repeat mr-2"></i> Retry Extraction
+                </button>
+                <a 
+                    href="{% url 'questionnaires:my_uploads' %}"
+                    class="flex-1 bg-gray-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-600 transition-all text-center"
+                >
+                    <i class="bi bi-x-circle mr-2"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

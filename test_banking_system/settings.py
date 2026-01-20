@@ -1,11 +1,13 @@
 from pathlib import Path
 import os
+from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key-change-in-production'
+# Use config() to read from .env file
+SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key')
 
-DEBUG = True
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = []
 
@@ -43,7 +45,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'accounts.context_processors.notifications_context',  # ← ADD THIS LINE
+                'accounts.context_processors.notifications_context',
             ],
         },
     },
@@ -82,6 +84,12 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
 
+# Anthropic API Configuration (reads from .env file)
+ANTHROPIC_API_KEY = config('ANTHROPIC_API_KEY', default='')
+
 # File upload settings
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
+# Allowed file extensions for questionnaires
+ALLOWED_FILE_EXTENSIONS = ['.pdf', '.docx', '.doc', '.xlsx', '.xls', '.txt']
